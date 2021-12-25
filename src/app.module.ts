@@ -14,6 +14,7 @@ import { Report } from './reports/report.entity'
     database: 'db.sqlite', 
     // entities we have through the app
     entities: [User, Report],
+    // synchronize to automatically change the structure of the dataset, used only in development as it may delete columns
     synchronize: true
   }),
   UsersModule,
