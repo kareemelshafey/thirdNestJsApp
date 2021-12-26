@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Get, Delete, Patch, Param, Query, NotFoundException } from '@nestjs/common';
+import { Body, Controller, Post, Get, Delete, Patch, Param, Query, NotFoundException, UseInterceptors, ClassSerializerInterceptor } from '@nestjs/common';
 import { createUserDto } from './dtos/create-user.dto';
 import { updateUserDto } from './dtos/update-user.dto';
 import { UsersService } from './users.service';
@@ -13,6 +13,7 @@ export class UsersController {
     }
 
     // is is defined as a string not  a number as it is a part of the url and every part of the url is defined as a string
+    @UseInterceptors(ClassSerializerInterceptor)
     @Get('/:id')
     async findUser(@Param('id') id: string){
         const user = await this.usersService.findOne(parseInt(id));
