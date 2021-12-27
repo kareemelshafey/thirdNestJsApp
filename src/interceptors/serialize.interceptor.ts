@@ -3,6 +3,16 @@ import { Observable } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { plainToClass } from 'class-transformer'
 
+interface classConstructor {
+    // this means any class
+    new (...args: any[]): {}
+}
+
+// A function to decorate and use serialization in one line of code 
+export function Serialize(dto: classConstructor){
+    return UseInterceptors(new SerializeInterceptor(dto));
+}
+
 export class SerializeInterceptor implements NestInterceptor {
     constructor(private dto: any){}
     
