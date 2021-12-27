@@ -15,7 +15,7 @@ export class UsersController {
     }
 
     // is is defined as a string not  a number as it is a part of the url and every part of the url is defined as a string
-    @UseInterceptors(SerializeInterceptor)
+    @UseInterceptors(new SerializeInterceptor(UserDto))
     @Get('/:id')
     async findUser(@Param('id') id: string){
         console.log('handler is running')
