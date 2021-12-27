@@ -3,6 +3,7 @@ import { createUserDto } from './dtos/create-user.dto';
 import { updateUserDto } from './dtos/update-user.dto';
 import { UsersService } from './users.service';
 import { SerializeInterceptor } from '../interceptors/serialize.interceptor'
+import { UserDto } from './dtos/user.dto'
 
 @Controller('auth')
 export class UsersController {
