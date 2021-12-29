@@ -4,15 +4,24 @@ import { updateUserDto } from './dtos/update-user.dto';
 import { UsersService } from './users.service';
 import { Serialize } from '../interceptors/serialize.interceptor'
 import { UserDto } from './dtos/user.dto'
+import { AuthService } from './auth.service'
 
 @Controller('auth')
 @Serialize(UserDto)
 export class UsersController {
-    constructor(private usersService: UsersService){}
+    constructor(
+        private usersService: UsersService,
+        private authService: AuthService
+        ){}
 
     @Post('/signup')
     createUser(@Body() body: createUserDto) {
-        this.usersService.create(body.email, body.password);
+        return this.authService.signup(body.email, body.password);
+    }
+
+    @Post('/signin')
+    signin(@Body() body: createUserDto) {
+        return this.authService.signin(body.email, body.password);
     }
 
     // id is defined as a string not  a number as it is a part of the url and every part of the url is defined as a string
