@@ -1,27 +1,51 @@
-import { Body, Controller, Post, Get, Delete, Patch, Param, Query, NotFoundException } from '@nestjs/common';
+import { Body, Controller, Post, Get, Delete, Patch, Param, Query, NotFoundException, Session, UseInterceptors } from '@nestjs/common';
 import { createUserDto } from './dtos/create-user.dto';
 import { updateUserDto } from './dtos/update-user.dto';
 import { UsersService } from './users.service';
 import { Serialize } from '../interceptors/serialize.interceptor'
 import { UserDto } from './dtos/user.dto'
 import { AuthService } from './auth.service'
+import { CurrentUser } from './decorators/current-user.decorator'
+import { CurrentUserInterceptor } from './interceptors/current-user.interceptor';
+import { User } from './user.entity'
 
 @Controller('auth')
 @Serialize(UserDto)
+@UseInterceptors(CurrentUserInterceptor)
 export class UsersController {
     constructor(
         private usersService: UsersService,
         private authService: AuthService
         ){}
 
+    // @Get('/whoami')
+    // whoAmI(@Session() session: any){
+    //     return this.usersService.findOne(session.userId);
+    // }    
+
+    @Get('/whoami')
+    whoAmI(@CurrentUser() user: User){
+        return user;
+    }    
+
+    @Post('signout')
+    signOut(@Session() session: any){
+        session.userId = null;
+    }
+
     @Post('/signup')
-    createUser(@Body() body: createUserDto) {
-        return this.authService.signup(body.email, body.password);
+    async createUser(@Body() body: createUserDto, @Session() session: any) {
+        const user = await this.authService.signup(body.email, body.password);
+        // If the session is updated at the same time then this means that the cookie will be the same because it is the same session
+        session.userId = user.id;
+        return user;
     }
 
     @Post('/signin')
-    signin(@Body() body: createUserDto) {
-        return this.authService.signin(body.email, body.password);
+    async signin(@Body() body: createUserDto, @Session() session: any) {
+        const user = await this.authService.signin(body.email, body.password);
+        session.userId = user.id;
+        return user;
     }
 
     // id is defined as a string not  a number as it is a part of the url and every part of the url is defined as a string
