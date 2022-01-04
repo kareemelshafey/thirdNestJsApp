@@ -12,9 +12,17 @@ describe('AuthService', () => {
     beforeEach(async () => {
         // Create a fake copy of the users service 
         // Partial means that it checks if the types is correct
+        const users: User[] = [];
          fakeUsersService = {
-            find: () => Promise.resolve([]),
-            create: (email: string, password: string) => Promise.resolve({ id: 1, email, password} as User),
+            find: (email: string) => {
+                const filteredUsers = users.filter(user => user.email === email);
+                return Promise.resolve(filteredUsers);
+            },
+            create: (email: string, password: string) => { 
+                const user = { id: Math.floor(Math.random() * 999999), email, password} as User;
+                users.push(user);
+                return Promise.resolve(user);
+            },
         }
         
         const module = await Test.createTestingModule({
@@ -45,10 +53,9 @@ describe('AuthService', () => {
     });
 
     it('throws an error if user signs up with email that is in use', async () => {
-        fakeUsersService.find = () => Promise.resolve([{ id: 1, email: 'a', password: '1'} as User]);
-
+        await service.signup('asdf@asdf.com', 'asdf');
         try {
-            await service.signup('asdf@asdf.com', 'asdf')
+            await service.signup('asdaaaf@asdf.com', 'asdf');
         } catch (err) {
             expect(err).toBeInstanceOf(BadRequestException)
             expect(err.message).toBe('email in use');
@@ -57,7 +64,7 @@ describe('AuthService', () => {
 
     it('throws if sign in is called with an unused email', async () => {
         try {
-            await service.signin('asdf@asdf.com', 'asdf')
+            await service.signin('asdasasf@asdf.com', 'asdf')
         } catch (err) {
             expect(err).toBeInstanceOf(NotFoundException)
             expect(err.message).toBe('user not found');
@@ -65,9 +72,11 @@ describe('AuthService', () => {
     });
 
     it('throws if an invalid password is provided', async () => {
-        fakeUsersService.find = () => Promise.resolve([{  email: 'asdf@asdf.com', password: 'laskdjf'} as User]);
+        await service.signup('lalalsmak@nsnkdaaa.com', 'password');
+        let user;
         try {
-            await service.signin('lalalsmak@nsnkda.com', 'password')
+            user = await service.signin('lalalsmak@nsnkdaaa.com', 'ppassword');
+            expect(user).not.toBeDefined();
         } catch (err) {
             expect(err).toBeInstanceOf(BadRequestException)
             expect(err.message).toBe('bad password');
@@ -75,13 +84,10 @@ describe('AuthService', () => {
     })
 
     it('returns a user if correct password is provided', async () => {
-        fakeUsersService.find = () => Promise.resolve([{  email: 'asdf@asdf.com', password: '1e3736f8abb249af.f76667abe905828d139e6bea0624886aadac0465be7033ec7526ba4de46f932e'} as User]);
+        await service.signup('asdf@asdf.com', 'mypassword');
 
         const user = await service.signin('asdf@asdf.com', 'mypassword')
         expect(user).toBeDefined();
-
-        // const user = await service.signup('asdf@asdf.com', 'mypassword')
-        // console.log(user)
     })
 })
 
