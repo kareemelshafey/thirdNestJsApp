@@ -7,18 +7,36 @@ import { UsersModule } from './users/users.module';
 import { ReportsModule } from './reports/reports.module';
 import { User } from './users/user.entity'
 import { Report } from './reports/report.entity'
+// The config module is used to specify which file we are going to read while the configservice will be used to read the data inside the file. 
+import { ConfigModule, ConfigService } from '@nestjs/config';
 const cookieSession = require('cookie-session');
 
 @Module({
-  imports: [TypeOrmModule.forRoot({
-    type: 'sqlite',
-    // name of the database and creates a new file in our project automatically
-    database: 'db.sqlite', 
-    // entities we have through the app
-    entities: [User, Report],
-    // synchronize to automatically change the structure of the dataset, used only in development as it may delete columns
-    synchronize: true
-  }),
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: `.env.${process.env.NODE_ENV}`
+    }),
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        return {
+          type: 'sqlite',
+          database: config.get<string>('DB_NAME'),
+          synchronize: true,
+          entities: [User, Report]
+        }
+      }
+    }),
+  //   TypeOrmModule.forRoot({
+  //   type: 'sqlite',
+  //   // name of the database and creates a new file in our project automatically
+  //   database: 'db.sqlite', 
+  //   // entities we have through the app
+  //   entities: [User, Report],
+  //   // synchronize to automatically change the structure of the dataset, used only in development as it may delete columns
+  //   synchronize: true
+  // }),
   UsersModule,
   ReportsModule],
   controllers: [AppController],
@@ -38,6 +56,7 @@ export class AppModule {
     consumer.apply(cookieSession({
       keys: ['asdfasfd'],
       }),
+      // * means all routes
     ).forRoutes('*');
   }
 }
