@@ -1,4 +1,5 @@
-import { AfterInsert, AfterRemove, AfterUpdate, Entity, Column, PrimaryGeneratedColumn } from "typeorm";
+import { Report } from "src/reports/report.entity";
+import { AfterInsert, AfterRemove, AfterUpdate, Entity, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm";
 
 @Entity()
 export class User {
@@ -10,6 +11,9 @@ export class User {
 
     @Column()
     password: string;
+
+    @OneToMany(() => Report, (report) => report.user)
+    reports: Report[];
 
     // Hooks only work when entity is created and here is for exaple why we create then save
     // this is used after the user is inserted into the database
