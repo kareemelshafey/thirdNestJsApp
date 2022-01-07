@@ -17,24 +17,26 @@ const cookieSession = require('cookie-session');
       isGlobal: true,
       envFilePath: `.env.${process.env.NODE_ENV}`
     }),
-    TypeOrmModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
-        return {
-          type: 'sqlite',
-          database: config.get<string>('DB_NAME'),
-          synchronize: true,
-          entities: [User, Report]
-        }
-      }
-    }),
+    TypeOrmModule.forRoot(),
+    // TypeOrmModule.forRootAsync({
+    //   inject: [ConfigService],
+    //   useFactory: (config: ConfigService) => {
+    //     return {
+    //       type: 'sqlite',
+    //       database: config.get<string>('DB_NAME'),
+    //       synchronize: true,
+    //       entities: [User, Report]
+    //     }
+    //   }
+    // }),
+
   //   TypeOrmModule.forRoot({
   //   type: 'sqlite',
   //   // name of the database and creates a new file in our project automatically
   //   database: 'db.sqlite', 
   //   // entities we have through the app
   //   entities: [User, Report],
-  //   // synchronize to automatically change the structure of the dataset, used only in development as it may delete columns
+  //   // synchronize to automatically change the structure of the dataset, used only in development as it may delete columns, when deploying make it false
   //   synchronize: true
   // }),
   UsersModule,
@@ -52,9 +54,13 @@ const cookieSession = require('cookie-session');
   ],
 })
 export class AppModule {
+  constructor (
+    private configService: ConfigService
+  ){}
+
   configure(consumer: MiddlewareConsumer){
     consumer.apply(cookieSession({
-      keys: ['asdfasfd'],
+      keys: [this.configService.get('COOKIE_KEY')],
       }),
       // * means all routes
     ).forRoutes('*');
